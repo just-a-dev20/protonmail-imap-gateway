@@ -1,0 +1,13 @@
+[project]
+name = "protonmail-imap-gateway"
+version = "0.1.0"
+requires-python = ">=3.11"
+description = "TLS and Docker deployment layer for Proton Mail Bridge"
+license = "GPL-3.0-or-later"
+dependencies = []
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

@@ -1,0 +1,25 @@
+# Docker publishing is separately restricted to host loopback.
+[imap]
+listen = "127.0.0.1"
+port = 1993
+backend_port = 1143
+
+[smtp]
+listen = "127.0.0.1"
+port = 1465
+backend_port = 1025
+
+[tls]
+cert_file = "/run/secrets/tls_cert"
+key_file = "/run/secrets/tls_key"
+bridge_ca_file = "/data/bridge-cert/cert.pem"
+
+[security]
+allow_lan = false
+connections_per_minute = 20
+max_connections = 64
+session_seconds = 3600
+login_seconds = 60
+
+[health]
+port = 8080

@@ -1,0 +1,12 @@
+.git
+.venv
+.ruff_cache
+**/__pycache__
+secrets
+config.toml
+.env
+data
+dist
+*.pem
+*.key
+*.enc

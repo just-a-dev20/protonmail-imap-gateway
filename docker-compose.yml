@@ -1,0 +1,38 @@
+services:
+  gateway:
+    build:
+      context: .
+      target: final
+    restart: unless-stopped
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
+    mem_limit: 2g
+    stop_grace_period: 20s
+    environment:
+      # Required for Docker NAT. Host publication below remains loopback-only.
+      GATEWAY_LISTEN: "0.0.0.0"
+      GATEWAY_ALLOW_LAN: "true"
+    ports:
+      - "127.0.0.1:${IMAPS_PORT:-1993}:1993"
+      - "127.0.0.1:${SMTPS_PORT:-1465}:1465"
+    volumes:
+      - gateway-data:/data
+      - ./config.toml:/app/config.toml:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777
+    secrets:
+      - master_key
+      - tls_cert
+      - tls_key
+secrets:
+  master_key:
+    file: ./secrets/master_key
+  tls_cert:
+    file: ./secrets/tls_cert.pem
+  tls_key:
+    file: ./secrets/tls_key.pem
+volumes:
+  gateway-data:
