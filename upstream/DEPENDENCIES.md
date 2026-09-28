@@ -10,6 +10,10 @@ security updates, including their module resolver changes:
   [HTTP/2 memory exhaustion](https://github.com/grpc/grpc-go/security/advisories/GHSA-vp52-pcj8-j9qc)
   and [malformed xDS request crash](https://github.com/grpc/grpc-go/security/advisories/GHSA-2v4p-qf9q-27wj).
 
+* `github.com/quic-go/quic-go v0.59.0` → `v0.59.1`:
+  [HTTP/3 QPACK trailer expansion](https://github.com/quic-go/quic-go/security/advisories/GHSA-vvgj-x9jq-8cj9),
+  additionally reported by GitHub Dependabot.
+
 These were found by the project's actual image scan. Modules are updated even
 where exploitability may depend on unused upstream features. No scanner
 exceptions were added. The exact updated source and vendored module licenses
