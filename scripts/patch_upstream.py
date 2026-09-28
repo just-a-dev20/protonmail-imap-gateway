@@ -24,6 +24,16 @@ text = (
 )
 path.write_text(text)
 
+# Upstream's desktop entrypoint returns status 0 on initialization errors.
+# Interactive setup must propagate the failure to Docker and its caller.
+path = root / "cmd/Desktop-Bridge/main.go"
+text = path.read_text()
+marker = "\n\t\t})\n\t}\n}"
+if text.count(marker) != 1:
+    raise RuntimeError("upstream entrypoint changed; review patch")
+text = text.replace(marker, "\n\t\t})\n\t\tos.Exit(1)\n\t}\n}")
+path.write_text(text)
+
 # Fail closed instead of using the desktop application's insecure fallback.
 path = root / "internal/app/vault.go"
 text = path.read_text()
