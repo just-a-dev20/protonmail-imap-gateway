@@ -101,7 +101,7 @@ Read [the threat model](docs/security.md) before deployment. The server is a dec
 * Separate master-key Docker secret; AES-256-GCM keychain and upstream encrypted vault/cache. Metadata is not all encrypted.
 * Non-root UID 10001, read-only root, no Linux capabilities, no-new-privileges, bounded memory/PIDs, disabled core dumps.
 * 20 connections/minute globally, one login attempt/connection, 60-second login deadline, one-hour connection lifetime. Clients reconnect after expiry. These are connection controls, not Proton session revocation.
-* Gateway JSON logs contain fixed events only. Upstream logging is suppressed because some upstream paths log verification tokens. `docker compose logs` provides lifecycle information, not mailbox diagnostics.
+* Gateway JSON logs contain fixed events only. Set `GATEWAY_LOG_LEVEL` in the Compose environment to `debug`, `info` (default), `warning`, or `error` to filter gateway events; this never enables upstream diagnostics. Upstream logging is suppressed because some upstream paths log verification tokens. `docker compose logs` provides lifecycle information, not mailbox diagnostics.
 * `GET http://127.0.0.1:8080/healthz` exists **inside the container only**. HTTP 200 means both backend TLS greetings succeed; it does not mean logged in, synchronized, or able to send mail. Session/sync fields explicitly say `unknown`.
 
 Back up the `gateway-data` volume while stopped, and keep its master key in a separate protected backup. Revoke Proton sessions through Proton account security settings if compromised. Rebuild to update Bridge/base images; test upgrades before replacing a working deployment. There is no automatic binary replacement.

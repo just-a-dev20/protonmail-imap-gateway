@@ -74,6 +74,16 @@ class ConfigurationTests(unittest.TestCase):
             json.loads(output.getvalue()), {"event": "listeners_started", "level": "info"}
         )
 
+    def test_log_level_filter(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {"GATEWAY_LOG_LEVEL": "error"}):
+            with contextlib.redirect_stdout(output):
+                event("listeners_started")
+                event("operation_failed", "error")
+        self.assertEqual(
+            json.loads(output.getvalue()), {"event": "operation_failed", "level": "error"}
+        )
+
 
 class AuthTests(unittest.TestCase):
     def test_imap_auth_needs_matching_tag(self):

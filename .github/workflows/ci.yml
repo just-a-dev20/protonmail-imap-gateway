@@ -22,7 +22,7 @@ jobs:
       - run: test -z "$(gofmt -l upstream/*.go)"
       - run: python -m unittest discover -v
       - run: sh scripts/test-keychain.sh
-      - run: sh scripts/init-secrets.sh && docker compose config --quiet
+      - run: sh scripts/init-secrets.sh && test "$(stat -c %a config.toml)" = 644 && docker compose config --quiet
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 45

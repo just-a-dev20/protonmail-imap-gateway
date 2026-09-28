@@ -6,6 +6,7 @@ import fcntl
 import os
 import resource
 import signal
+import ssl
 import subprocess
 import sys
 import urllib.request
@@ -40,6 +41,7 @@ def prepare():
 
 async def serve(config):
     gateway = Gateway(config)
+    event("tls_material_loaded")
     process = await asyncio.create_subprocess_exec(
         "/usr/local/bin/proton-bridge",
         "--noninteractive",
@@ -85,6 +87,7 @@ def main():
     if command not in ("setup", "serve"):
         raise ValueError("use setup, serve, or healthcheck")
     lock, root = prepare()
+    event("secure_storage_configured")
     with lock:
         if command == "setup":
             print(
@@ -114,6 +117,16 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (Exception, KeyboardInterrupt):
-        event("operation_failed_check_setup_and_configuration", "error")
+    except (Exception, KeyboardInterrupt) as exc:
+        name = "operation_failed_check_setup_and_configuration"
+        for kind, code in (
+            (PermissionError, "file_access_denied"),
+            (FileNotFoundError, "required_file_missing"),
+            (ssl.SSLError, "tls_configuration_invalid"),
+            (ValueError, "configuration_invalid"),
+        ):
+            if isinstance(exc, kind):
+                name = code
+                break
+        event(name, "error")
         sys.exit(1)

@@ -7,6 +7,8 @@ from pathlib import Path
 
 
 def load(path=None):
+    if os.environ.get("GATEWAY_LOG_LEVEL", "info") not in ("debug", "info", "warning", "error"):
+        raise ValueError("invalid log level")
     path = path or os.environ.get("GATEWAY_CONFIG", "/app/config.toml")
     with open(path, "rb") as stream:
         config = tomllib.load(stream)

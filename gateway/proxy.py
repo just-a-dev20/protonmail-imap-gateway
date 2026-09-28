@@ -4,12 +4,17 @@ import asyncio
 import collections
 import contextlib
 import json
+import os
 import ssl
 import time
 
 
 def event(name, level="info"):
     # Callers supply fixed strings, never exceptions or protocol data.
+    levels = {"debug": 0, "info": 1, "warning": 2, "error": 3}
+    threshold = levels.get(os.environ.get("GATEWAY_LOG_LEVEL", "info"), 1)
+    if levels[level] < threshold:
+        return
     print(json.dumps({"event": name, "level": level}), flush=True)
 
 

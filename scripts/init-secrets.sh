@@ -14,6 +14,9 @@ openssl req -x509 -newkey rsa:3072 -sha256 -nodes -days 365 \
 # Compose bind-mounted secrets retain host permissions. Protect the enclosing
 # directory (0700) but permit the unprivileged container UID to read each file.
 chmod 444 secrets/master_key secrets/tls_key.pem secrets/tls_cert.pem
-if [ ! -e config.toml ]; then cp config.example.toml config.toml; fi
+if [ ! -e config.toml ]; then
+  cp config.example.toml config.toml
+  chmod 644 config.toml
+fi
 echo 'Store secrets/master_key separately from backups of the Docker volume.'
 echo 'Trust secrets/tls_cert.pem in clients, or replace TLS files with your own certificate.'
