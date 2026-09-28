@@ -33,6 +33,7 @@ FROM runtime AS test
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY tests/ tests/
+COPY config.example.toml config.example.toml
 USER 10001:10001
 ENTRYPOINT ["python", "-m", "unittest", "discover", "-v"]
 
