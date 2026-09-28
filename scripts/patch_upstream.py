@@ -22,6 +22,19 @@ text = (
 )
 path.write_text(text)
 
+# Fail closed instead of using the desktop application's insecure fallback.
+path = root / "internal/app/vault.go"
+text = path.read_text()
+marker = "if key, helper, err := loadVaultKey(vaultDir, keychains, featureFlags); err != nil {"
+start = text.index(marker) + len(marker)
+end = text.index("\n\t} else {", start)
+text = (
+    text[:start]
+    + '\n\t\treturn nil, false, nil, fmt.Errorf("secure keychain unavailable: %w", err)'
+    + text[end:]
+)
+path.write_text(text)
+
 path = root / "internal/vault/types_settings.go"
 text = path.read_text()
 for old, new in (

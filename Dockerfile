@@ -8,6 +8,7 @@ COPY upstream/ /source/upstream/
 COPY scripts/patch_upstream.py /source/scripts/patch_upstream.py
 RUN python3 scripts/patch_upstream.py /source/bridge
 WORKDIR /source/bridge
+RUN cd utils && bash credits.sh bridge
 RUN go test ./pkg/keychain -run TestGatewayKeychain -count=1
 RUN CGO_ENABLED=1 go build -trimpath -ldflags="-X github.com/ProtonMail/proton-bridge/v3/internal/constants.Version=3.27.0+gateway -X github.com/ProtonMail/proton-bridge/v3/internal/constants.Revision=${BRIDGE_REVISION}" -o /out/proton-bridge ./cmd/Desktop-Bridge
 # Include the exact corresponding modified source, modules and their licenses.
