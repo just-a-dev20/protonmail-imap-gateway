@@ -5,6 +5,8 @@ import shutil
 import sys
 
 root = pathlib.Path(sys.argv[1])
+for name in ("go.mod", "go.sum"):
+    shutil.copyfile(pathlib.Path("upstream") / name, root / name)
 for name in ("helper_linux.go", "helper_linux_test.go"):
     shutil.copyfile(pathlib.Path("upstream") / name, root / "pkg/keychain" / name)
 path = root / "internal/logging/logging.go"

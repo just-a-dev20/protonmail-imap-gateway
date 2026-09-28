@@ -132,7 +132,7 @@ docker build --target test -t gateway-test .
 docker run --rm --read-only --cap-drop ALL --tmpfs /tmp gateway-test
 ```
 
-CI runs tests, formatting/lint checks, the encrypted-keychain tests, a Docker build, hardened-container tests, Compose smoke checks and Trivy scans for fixable high/critical vulnerabilities. Dependency versions come from the pinned upstream go.mod/go.sum. See [CONTRIBUTING](CONTRIBUTING.md) for test scope and [validation](docs/validation.md) for actual execution results.
+CI runs tests, formatting/lint checks, the encrypted-keychain tests, a Docker build, hardened-container tests, Compose smoke checks and Trivy scans for fixable high/critical vulnerabilities. Dependency versions are locked in `upstream/go.mod` and `upstream/go.sum`, including the documented security updates over the pinned Bridge source. See [CONTRIBUTING](CONTRIBUTING.md) for test scope and [validation](docs/validation.md) for actual execution results.
 
 ## Limitations and licensing
 

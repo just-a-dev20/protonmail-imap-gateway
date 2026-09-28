@@ -14,8 +14,8 @@ RUN CGO_ENABLED=1 go build -trimpath -ldflags="-X github.com/ProtonMail/proton-b
 # Include the exact corresponding modified source, modules and their licenses.
 RUN go mod vendor && tar --exclude=.git -czf /out/bridge-corresponding-source.tar.gz .
 
-FROM python:3.13-slim-bookworm AS runtime
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libsecret-1-0 libfido2-1 libcbor0.8 tini && rm -rf /var/lib/apt/lists/* && useradd --uid 10001 --create-home gateway && mkdir /data && chown gateway:gateway /data
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends python3 ca-certificates libsecret-1-0 libfido2-1 libcbor0.8 tini && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python3 /usr/local/bin/python && useradd --uid 10001 --create-home gateway && mkdir /data && chown gateway:gateway /data
 COPY --from=bridge-build /out/proton-bridge /usr/local/bin/proton-bridge
 COPY --from=bridge-build /out/bridge-corresponding-source.tar.gz /usr/share/gateway/bridge-corresponding-source.tar.gz
 WORKDIR /app
