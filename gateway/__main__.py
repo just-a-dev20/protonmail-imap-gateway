@@ -12,6 +12,8 @@ import sys
 import urllib.request
 from pathlib import Path
 
+from gateway.backends import command as backend_command
+from gateway.backends import kind, setup_web
 from gateway.config import load
 from gateway.proxy import Gateway, event
 
@@ -43,8 +45,7 @@ async def serve(config):
     gateway = Gateway(config)
     event("tls_material_loaded")
     process = await asyncio.create_subprocess_exec(
-        "/usr/local/bin/proton-bridge",
-        "--noninteractive",
+        *backend_command(config),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -59,7 +60,7 @@ async def serve(config):
         jobs = [asyncio.create_task(stop.wait()), asyncio.create_task(process.wait())]
         done, _ = await asyncio.wait(jobs, return_when=asyncio.FIRST_COMPLETED)
         if jobs[1] in done:
-            raise RuntimeError("bridge stopped")
+            raise RuntimeError("mail backend stopped")
     finally:
         await gateway.stop()
         if process.returncode is None:
@@ -86,10 +87,14 @@ def main():
         return
     if command not in ("setup", "serve"):
         raise ValueError("use setup, serve, or healthcheck")
+    backend = kind()
     lock, root = prepare()
     event("secure_storage_configured")
     with lock:
         if command == "setup":
+            if backend == "web":
+                setup_web(root)
+                return
             print(
                 "Use: login (Proton password, 2FA and mailbox password are prompted by Bridge).\n"
                 "Then: info (record the separate Bridge client password).\n"

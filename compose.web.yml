@@ -1,0 +1,14 @@
+# Use with: docker compose -f docker-compose.yml -f compose.web.yml ...
+# Independent encrypted state; do not import the official Bridge volume.
+services:
+  gateway:
+    build:
+      dockerfile: Dockerfile.web
+    environment:
+      GATEWAY_BACKEND: web
+      GATEWAY_WEB_APP_VERSION: ${GATEWAY_WEB_APP_VERSION:-Other}
+      GATEWAY_WEB_TLS_NAME: ${GATEWAY_WEB_TLS_NAME:-localhost}
+    volumes:
+      - gateway-web-data:/data
+volumes:
+  gateway-web-data:

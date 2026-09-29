@@ -1,5 +1,7 @@
 # Comparison with official Proton Mail Bridge
 
+This table describes the default Bridge image. The [experimental web backend](web-backend.md) uses Hydroxide instead of Gluon, with incomplete IMAP support and unverified Free-account compatibility.
+
 | Area | Official Bridge | This project |
 |---|---|---|
 | Architecture | Desktop process, Gluon IMAP, SMTP, Proton API | Same pinned headless engine plus Python TLS transport/supervisor |

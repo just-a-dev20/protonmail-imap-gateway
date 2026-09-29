@@ -1,4 +1,4 @@
-"""TLS transport. Proton Bridge owns mail semantics, SASL, and cryptography."""
+"""TLS transport. The selected backend owns mail semantics, SASL, and cryptography."""
 
 import asyncio
 import collections
@@ -7,6 +7,8 @@ import json
 import os
 import ssl
 import time
+
+from gateway.backends import kind, trust
 
 
 def event(name, level="info"):
@@ -92,7 +94,10 @@ class Gateway:
         self.front_tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.front_tls.minimum_version = ssl.TLSVersion.TLSv1_2
         self.front_tls.load_cert_chain(tls["cert_file"], tls["key_file"])
-        self.back_tls = ssl.create_default_context(cafile=tls["bridge_ca_file"])
+        backend_ca, self.backend_tls_name = trust(config)
+        self.back_tls = ssl.create_default_context(cafile=backend_ca)
+        if kind() == "web":
+            self.back_tls.load_default_certs()
         self.back_tls.minimum_version = ssl.TLSVersion.TLSv1_2
 
     async def backend(self, protocol):
@@ -101,7 +106,7 @@ class Gateway:
                 "127.0.0.1",
                 self.config[protocol]["backend_port"],
                 ssl=self.back_tls,
-                server_hostname="127.0.0.1",
+                server_hostname=self.backend_tls_name,
                 limit=65536,
                 ssl_handshake_timeout=5,
             ),

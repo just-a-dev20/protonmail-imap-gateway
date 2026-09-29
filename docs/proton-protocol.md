@@ -17,7 +17,7 @@ WebClients `packages/shared/lib/api/auth.ts` defines `core/v4/auth/info`, `core/
 
 Go Proton API `response.go` defines **PaidPlanRequired = 10004**. Bridge `internal/frontend/grpc/service_methods.go` handles that API error as a paid-plan requirement. This is evidence of an API entitlement response, **not evidence identifying every server endpoint or the exact timing of enforcement**: server implementation is not public here. No live Free account was tested. Official support documentation explicitly limits Bridge to paid Mail plans. The gateway preserves the upstream app identity and all entitlement handling. It does not spoof the web client, remove checks, or work around CAPTCHA/human verification.
 
-**Decision:** support Bridge-eligible paid accounts only. Free account login/read/send through this gateway remain unsupported. The official web app's Free functionality is not reused to assert or implement gateway support.
+**Default-engine decision:** official Bridge mode supports Bridge-eligible paid accounts only. An opt-in [Hydroxide web-API backend](web-backend.md) was subsequently added on 2026-09-29, with separate authentication, encrypted credentials and local IMAP/SMTP implementations. It uses the pinned upstream API client rather than website assets. Free-account login/read/send remain unverified; API errors are propagated. The Bridge-specific statements in this document apply to the default image.
 
 ## Protocol and encryption implementation
 

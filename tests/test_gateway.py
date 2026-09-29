@@ -228,6 +228,31 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn(b"authenticated", await reader.readline())
         return reader, writer
 
+    async def test_web_backend_uses_verified_frontend_certificate(self):
+        await self.gateway.stop()
+        self.config["tls"]["bridge_ca_file"] = "/nonexistent/bridge.pem"
+        with patch.dict(
+            os.environ, {"GATEWAY_BACKEND": "web", "GATEWAY_WEB_TLS_NAME": "localhost"}
+        ):
+            self.gateway = Gateway(copy.deepcopy(self.config))
+        await self.gateway.start()
+        self.assertTrue((await self.gateway.status())["healthy"])
+        for protocol in ("imap", "smtp"):
+            reader, writer = await self.authenticate(protocol)
+            writer.write(b"test payload\r\n")
+            await writer.drain()
+            self.assertEqual(await reader.readline(), b"test payload\r\n")
+            await close(writer)
+
+    async def test_web_backend_rejects_wrong_certificate_name(self):
+        await self.gateway.stop()
+        with patch.dict(
+            os.environ, {"GATEWAY_BACKEND": "web", "GATEWAY_WEB_TLS_NAME": "wrong.invalid"}
+        ):
+            self.gateway = Gateway(copy.deepcopy(self.config))
+        await self.gateway.start()
+        self.assertFalse((await self.gateway.status())["healthy"])
+
     async def test_imap_commands_and_binary_literals_pass_unchanged(self):
         reader, writer = await self.authenticate("imap")
         commands = [

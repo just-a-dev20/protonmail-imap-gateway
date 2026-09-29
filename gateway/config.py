@@ -5,8 +5,12 @@ import os
 import tomllib
 from pathlib import Path
 
+from gateway.backends import kind, web_version
+
 
 def load(path=None):
+    if kind() == "web":
+        web_version()
     if os.environ.get("GATEWAY_LOG_LEVEL", "info") not in ("debug", "info", "warning", "error"):
         raise ValueError("invalid log level")
     path = path or os.environ.get("GATEWAY_CONFIG", "/app/config.toml")

@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.7-bookworm AS web-build
+RUN apt-get update && apt-get install -y --no-install-recommends git python3 && rm -rf /var/lib/apt/lists/*
+WORKDIR /source
+ARG WEB_REVISION=80aa6c315cdd378207b6d44d6014240b3a636449
+RUN git init web && cd web && git remote add origin https://codeberg.org/emersion/hydroxide.git && git fetch --depth 1 origin "$WEB_REVISION" && git checkout --detach FETCH_HEAD && test "$(git rev-parse HEAD)" = "$WEB_REVISION"
+COPY upstream/web/ /source/upstream/web/
+COPY scripts/patch_web_backend.py /source/scripts/patch_web_backend.py
+RUN python3 scripts/patch_web_backend.py /source/web
+WORKDIR /source/web
+RUN go test -race ./auth && go test ./...
+RUN CGO_ENABLED=0 go build -trimpath -o /out/hydroxide ./cmd/hydroxide
+RUN go mod vendor && tar --exclude=.git -czf /out/web-corresponding-source.tar.gz .
+
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends python3 ca-certificates tini && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python3 /usr/local/bin/python && useradd --uid 10001 --create-home gateway && mkdir /data && chown gateway:gateway /data
+COPY --from=web-build /out/hydroxide /usr/local/bin/hydroxide
+COPY --from=web-build /out/web-corresponding-source.tar.gz /usr/share/gateway/web-corresponding-source.tar.gz
+COPY --from=web-build /source/web/LICENSE /usr/share/gateway/HYDROXIDE-LICENSE
+WORKDIR /app
+COPY gateway/ gateway/
+COPY config.example.toml config.toml
+COPY LICENSE /usr/share/gateway/LICENSE
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 GATEWAY_MASTER_KEY_FILE=/run/secrets/master_key GATEWAY_BACKEND=web
+USER 10001:10001
+EXPOSE 1993 1465
+HEALTHCHECK --interval=30s --timeout=25s --start-period=30s --retries=3 CMD ["python", "-m", "gateway", "healthcheck"]
+ENTRYPOINT ["/usr/bin/tini", "--", "python", "-m", "gateway"]
+CMD ["serve"]
+
+FROM runtime AS test
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+COPY tests/ tests/
+COPY config.example.toml config.example.toml
+USER 10001:10001
+ENV GATEWAY_BACKEND=bridge
+ENTRYPOINT ["python", "-m", "unittest", "discover", "-v"]
+
+FROM runtime AS final

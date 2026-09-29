@@ -1,5 +1,13 @@
 # Validation record
 
+Experimental web backend, 2026-09-29:
+
+* Local Python: 29 unit/TLS integration tests pass, including web backend selection, setup failure, separate certificate trust and hostname rejection.
+* The pinned, patched Hydroxide builds with Go 1.26.7 and passes its package suite plus credential-encryption, concurrent-write and API-rejection regression tests.
+* The compiled Hydroxide binary was run behind the actual gateway on temporary loopback ports. Verified TLS, IMAP CAPABILITY/NOOP and SMTP EHLO/NOOP passed without a Proton account.
+* CI includes a separate web image build, Go race tests for the credential package, hardened-container tests, Compose smoke test and vulnerability scan. Consult the revision's CI run for completion status.
+* Free-account login, synchronization, delivery and browser challenge flows remain unverified. No account credentials were used or supplied.
+
 Initial implementation, 2026-09-28.
 
 * Local Python 3.13: 21 account-free unit and TLS integration tests pass.

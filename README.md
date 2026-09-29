@@ -1,10 +1,25 @@
 # Proton Mail IMAP Gateway
 
-A self-hosted Docker deployment layer for **paid Proton Mail accounts**, using the published Proton Mail Bridge engine for IMAP, SMTP, authentication, synchronization and encryption. Independent of Proton AG. GPL-3.0-or-later.
+A self-hosted Docker IMAP/SMTP gateway for Proton Mail. Choose the official Bridge engine (default, paid Mail plan required) or an experimental independent web-API backend using Hydroxide. Independent of Proton AG. GPL-3.0-or-later.
 
-**Free accounts are unsupported.** Proton documents Bridge as a paid-plan feature. This project preserves account entitlement checks. It does not use web-client impersonation or bypass human verification.
+**Want to try access without official Bridge?** Use the [experimental web-API backend](docs/web-backend.md). It removes the Bridge dependency, but Free-account login, reading and sending remain **unverified**. It cannot override a rejection from Proton. The default Bridge mode still requires an eligible paid plan.
 
 Status: initial implementation. Account-free transport/security tests are provided. No real Proton account or graphical email client has been tested by this project. Do not treat mock protocol tests as certification of production mail delivery. See [validation](docs/validation.md).
+
+## Experimental web-API mode
+
+For an existing checkout, keep your secrets and use this Compose overlay:
+
+```sh
+docker compose stop
+docker compose -f docker-compose.yml -f compose.web.yml build
+docker compose -f docker-compose.yml -f compose.web.yml run --rm gateway setup
+docker compose -f docker-compose.yml -f compose.web.yml up -d
+```
+
+For a fresh checkout, run `sh scripts/init-secrets.sh` first. Setup prompts for your account credentials and generates a separate mail-client password. No Bridge installation or `cert export` is needed. Read the [web-backend guide](docs/web-backend.md) for storage differences, API compatibility and incomplete IMAP support. It uses a separate data volume and retains TLS and connection limits.
+
+The instructions and compatibility table below describe the **default official Bridge mode**.
 
 ## Architecture
 
@@ -132,10 +147,10 @@ docker build --target test -t gateway-test .
 docker run --rm --read-only --cap-drop ALL --tmpfs /tmp gateway-test
 ```
 
-CI runs tests, formatting/lint checks, the encrypted-keychain tests, a Docker build, hardened-container tests, Compose smoke checks and Trivy scans for fixable high/critical vulnerabilities. Dependency versions are locked in `upstream/go.mod` and `upstream/go.sum`, including the documented security updates over the pinned Bridge source. See [CONTRIBUTING](CONTRIBUTING.md) for test scope and [validation](docs/validation.md) for actual execution results.
+CI runs tests, formatting/lint checks, credential-encryption tests, builds of both backend images, hardened-container tests, Compose smoke checks and Trivy scans for fixable high/critical vulnerabilities. Dependency versions are locked in `upstream/go.mod` and `upstream/go.sum`, including the documented security updates over the pinned Bridge source. See [CONTRIBUTING](CONTRIBUTING.md) for test scope and [validation](docs/validation.md) for actual execution results.
 
 ## Limitations and licensing
 
-No Free gateway support, live-account verification, graphical-client certification, optional web UI, sync counters, automatic TLS renewal or automated key rotation. Hardware FIDO2 devices are not mapped into the container; use an upstream-supported authentication method that works in your environment. Outlook/cloud-client accessibility and SMTPUTF8 are not guaranteed. Transport tests do not test Proton PGP correctness; this is inherited from upstream and requires its own integration testing.
+No verified Free-account support, live-account verification, graphical-client certification, optional web UI, sync counters, automatic TLS renewal or automated key rotation. The experimental backend has additional [limitations](docs/web-backend.md#functional-limitations). Hardware FIDO2 devices are not mapped into the container; use an upstream-supported authentication method that works in your environment. Outlook/cloud-client accessibility and SMTPUTF8 are not guaranteed. Transport tests do not test Proton PGP correctness; this is inherited from upstream and requires its own integration testing.
 
 See [Bridge comparison](docs/bridge-comparison.md), [protocol/licensing research](docs/proton-protocol.md), [LICENSE](LICENSE) and [security reporting](SECURITY.md). The Docker image includes the exact modified Bridge source and vendored dependencies at `/usr/share/gateway/bridge-corresponding-source.tar.gz`. Preserve corresponding-source availability and all notices when distributing binaries. This project is not affiliated with Proton AG.

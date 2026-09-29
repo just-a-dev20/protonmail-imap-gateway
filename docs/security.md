@@ -1,5 +1,7 @@
 # Security design and threat model
 
+The storage, vault and certificate-export details below describe the default **official Bridge mode**. The experimental Hydroxide mode shares the network/process controls but uses different credential encryption and an unencrypted mailbox metadata database; see [web-backend security differences](web-backend.md#storage-and-security-differences). Its generated client password is independent of official Bridge.
+
 ## Boundaries and stored data
 
 Proton authentication, mailbox-key handling and OpenPGP stay in the upstream engine. Passwords are entered into its interactive terminal with its hidden-input handling. The gateway accepts only Bridge-generated mail-client credentials; Proton session tokens never become client credentials. No password environment variable is provided.
